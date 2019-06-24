@@ -82,6 +82,7 @@ namespace NPoco.Expressions
         private string groupBy = string.Empty;
         private string havingExpression;
         private string orderBy = string.Empty;
+        private string forUpdate = string.Empty;
 
         List<OrderByMember> ISqlExpression.OrderByMembers { get { return orderByMembers; } }
         List<SelectMember> ISqlExpression.SelectMembers { get { return selectMembers; } }
@@ -321,6 +322,12 @@ namespace NPoco.Expressions
             return this;
         }
 
+        public virtual SqlExpression<T> ForUpdate()
+        {
+            forUpdate = "FOR UPDATE";
+            return this;
+        }
+
         public virtual SqlExpression<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
             sep = string.Empty;
@@ -486,8 +493,18 @@ namespace NPoco.Expressions
             sql.Append(string.IsNullOrEmpty(OrderByExpression) ?
                        "" :
                        " \n" + OrderByExpression);
+            if (!applyPaging)
+            {
+                sql.Append(string.IsNullOrEmpty(ForUpdateExpression) ?
+                           "" :
+                           " \n" + ForUpdateExpression);
 
-            return applyPaging ? ApplyPaging(sql.ToString(), ModelDef.QueryColumns.Select(x=> new[] { x.Value }), new Dictionary<string, JoinData>()) : sql.ToString();
+                return sql.ToString();
+            }
+            else
+            {
+                return ApplyPaging(sql.ToString(), ModelDef.QueryColumns.Select(x => new[] { x.Value }), new Dictionary<string, JoinData>());
+            }
         }
 
         private string GetSelectExpression(bool distinct)
@@ -548,6 +565,18 @@ namespace NPoco.Expressions
             set
             {
                 orderBy = value;
+            }
+        }
+
+        private string ForUpdateExpression
+        {
+            get
+            {
+                return forUpdate;
+            }
+            set
+            {
+                forUpdate = value;
             }
         }
 
@@ -1433,6 +1462,10 @@ namespace NPoco.Expressions
 
             _params.Clear();
             _params.AddRange(parms);
+
+            sqlPage += (string.IsNullOrEmpty(ForUpdateExpression) ?
+               "" :
+               " \n" + ForUpdateExpression);
 
             return sqlPage;
         }
