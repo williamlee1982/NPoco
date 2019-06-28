@@ -1571,12 +1571,6 @@ namespace NPoco.Expressions
                 case "Equals":
                     statement = string.Format("({0} = {1})", expression, CreateParam(args[0]));
                     break;
-                case "GreaterThanOrEquals":
-                    statement = string.Format("({0} >= {1})", expression, CreateParam(args[0]));
-                    break;
-                case "LessThanOrEquals":
-                    statement = string.Format("({0} <= {1})", expression, CreateParam(args[0]));
-                    break;
                 case "ToString":
                     statement = string.Empty;
                     break;
