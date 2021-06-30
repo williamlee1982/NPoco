@@ -88,6 +88,7 @@ namespace NPoco.Linq
         IQueryProvider<T> Limit(int rows);
         IQueryProvider<T> Limit(int skip, int rows);
         IQueryProvider<T> From(QueryBuilder<T> builder);
+        IQueryProvider<T> ForUpdate();
     }
 
     public interface IAsyncQueryProvider<T> : IAsyncQueryResultProvider<T>
@@ -103,6 +104,7 @@ namespace NPoco.Linq
         IAsyncQueryProvider<T> Limit(int rows);
         IAsyncQueryProvider<T> Limit(int skip, int rows);
         IAsyncQueryProvider<T> From(QueryBuilder<T> builder);
+        IAsyncQueryProvider<T> ForUpdate();
     }
 
     public interface IAsyncQueryProviderWithIncludes<T> : IAsyncQueryProvider<T>
@@ -458,6 +460,12 @@ namespace NPoco.Linq
             return this;
         }
 
+        public IAsyncQueryProvider<T> ForUpdate()
+        {
+            _sqlExpression = _sqlExpression.ForUpdate();
+            return this;
+        }
+
         public List<dynamic> ToDynamicList()
         {
             return ToDynamicEnumerable().ToList();
@@ -803,6 +811,11 @@ namespace NPoco.Linq
         public new IQueryProvider<T> From(QueryBuilder<T> builder)
         {
             return (IQueryProvider<T>)base.From(builder);
+        }
+
+        public new IQueryProvider<T> ForUpdate()
+        {
+            return (IQueryProvider<T>)base.ForUpdate();
         }
     }
 }

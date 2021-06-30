@@ -22,7 +22,7 @@ namespace NPoco.DatabaseTypes
 
         public override string EscapeSqlIdentifier(string str)
         {
-            return string.Format("\"{0}\"", str);
+            return string.Format("\"{0}\"", str.ToLower());
         }
         
         private void AdjustSqlInsertCommandText(DbCommand cmd, string primaryKeyName)
