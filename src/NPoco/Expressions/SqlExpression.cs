@@ -68,6 +68,7 @@ namespace NPoco.Expressions
         List<SelectMember> SelectMembers { get; }
         List<GeneralMember> GeneralMembers { get; }
         string ApplyPaging(string sql, IEnumerable<PocoColumn[]> columns, Dictionary<string, JoinData> joinSqlExpressions);
+        string TableHint { get; }
     }
 
     public abstract class SqlExpression<T> : ISqlExpression
@@ -83,6 +84,7 @@ namespace NPoco.Expressions
         private string havingExpression;
         private string orderBy = string.Empty;
         private string forUpdate = string.Empty;
+        private string tableHint = string.Empty;
 
         List<OrderByMember> ISqlExpression.OrderByMembers { get { return orderByMembers; } }
         List<SelectMember> ISqlExpression.SelectMembers { get { return selectMembers; } }
@@ -92,6 +94,7 @@ namespace NPoco.Expressions
         int? ISqlExpression.Skip { get { return Skip; } }
         Type ISqlExpression.Type { get { return _type; } }
         object[] ISqlExpression.Params { get { return Context.Params; } }
+        string ISqlExpression.TableHint { get{ return tableHint; }}
 
         string ISqlExpression.ApplyPaging(string sql, IEnumerable<PocoColumn[]> columns, Dictionary<string, JoinData> joinSqlExpressions)
         {
@@ -378,6 +381,10 @@ namespace NPoco.Expressions
             }
         }
 
+        public virtual void TableHint(string hint)
+        {
+            tableHint += " " + hint;
+        }
 
         /// <summary>
         /// Set the specified offset and rows for SQL Limit clause.
@@ -1446,7 +1453,7 @@ namespace NPoco.Expressions
         private string BuildSelectExpression(List<SelectMember> fields, bool distinct)
         {
             var cols = fields ?? _pocoData.QueryColumns.Select(x => new SelectMember{ PocoColumn = x.Value, EntityType = _pocoData.Type, PocoColumns = new[] { x.Value }});
-            return string.Format("SELECT {0}{1} \nFROM {2}",
+            return string.Format("SELECT {0}{1} \nFROM {2}{3}",
                 (distinct ? "DISTINCT " : ""),
                     string.Join(", ", cols.Select(x =>
                     {
@@ -1464,7 +1471,8 @@ namespace NPoco.Expressions
 
                         return x.SelectSql;
                     }).ToArray()),
-                    _databaseType.EscapeTableName(_pocoData.TableInfo.TableName) + (PrefixFieldWithTableName ? " " + _databaseType.EscapeTableName(_pocoData.TableInfo.AutoAlias) : string.Empty));
+                    _databaseType.EscapeTableName(_pocoData.TableInfo.TableName) + (PrefixFieldWithTableName ? " " + _databaseType.EscapeTableName(_pocoData.TableInfo.AutoAlias) : string.Empty),
+                    tableHint);
         }
 
         internal List<PocoColumn> GetAllMembers()

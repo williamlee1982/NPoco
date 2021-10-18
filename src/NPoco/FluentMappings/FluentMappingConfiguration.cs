@@ -174,7 +174,7 @@ namespace NPoco.FluentMappings
                 ComputedPropertyTypeAs = x => ComputedColumnType.Always,
                 ForceDateTimesToUtcWhere = x => true,
                 ReferencePropertiesWhere = x => x.GetMemberInfoType().IsAClass() && ReflectionUtils.GetCustomAttributes(x, typeof(ReferenceAttribute)).Any(),
-                ComplexPropertiesWhere = x => x.GetMemberInfoType().IsAClass() && ReflectionUtils.GetCustomAttributes(x, typeof(ComplexMappingAttribute)).Any(),
+                ComplexPropertiesWhere = x => x.GetMemberInfoType().IsAClass() && (ReflectionUtils.GetCustomAttributes(x, typeof(ComplexMappingAttribute)).Cast<ComplexMappingAttribute>().FirstOrDefault()?.ComplexMapping ?? false),
                 ReferenceDbColumnsNamed = x => x.Name + "ID",
                 SequencesNamed = x => null,
                 UseOutputClauseWhere = x => false,
@@ -290,20 +290,17 @@ namespace NPoco.FluentMappings
             {
                 if (maps != null)
                 {
-                    if (maps.Config.ContainsKey(t))
-                    {
-                        return new FluentMappingsPocoDataBuilder(t, mappings, mapper).Init();
-                    }
-
                     if (scana != null)
                     {
                         var settings = ProcessSettings(scana);
                         var typeMapping = CreateMappings(settings, new[] { t });
                         return new FluentMappingsPocoDataBuilder(t, typeMapping, mapper).Init();
                     }
+
+                    return new FluentMappingsPocoDataBuilder(t, mappings, mapper).Init();
                 }
                 return new PocoDataBuilder(t, mapper).Init();
-            }));
+            }, mapper));
         }
 
         // Helper method if code is in seperate assembly
